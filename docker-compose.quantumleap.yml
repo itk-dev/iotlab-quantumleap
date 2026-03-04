@@ -1,0 +1,99 @@
+# https://quantumleap.readthedocs.io/en/latest/admin/installing/
+
+# version: '3'
+
+networks:
+  quantumleap:
+
+services:
+  orion:
+    image: fiware/orion:${ORION_VERSION:-3.3.1}
+    command: -logLevel DEBUG -noCache -dbhost mongo
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:1026/version"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=frontend"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?}_orion.rule=Host(`orion.${COMPOSE_DOMAIN?}`)"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME?}_orion.loadbalancer.server.port=1026"
+      # HTTPS config
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?}.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+    networks:
+      - quantumleap
+      - frontend
+    depends_on:
+      - mongo
+
+  # Database for orion
+  mongo:
+    image: mongo:${MONGO_VERSION:-4.4}
+    volumes:
+      - .docker/data/mongo:/data/db
+    networks:
+      - quantumleap
+
+  # ----------------------------------------------------------------------------
+
+  quantumleap:
+    image: orchestracities/quantumleap:${QL_VERSION:-latest}
+    environment:
+      LOGLEVEL: DEBUG
+      POSTGRES_HOST: timescale
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB_NAME: quantumleap
+      POSTGRES_DB_USER: quantumleap
+      POSTGRES_DB_PASS: '*'
+      POSTGRES_USE_SSL: false
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      USE_GEOCODING: true
+      # https://quantumleap.readthedocs.io/en/latest/admin/timescale/#using-the-timescale-back-end
+      # https://quantumleap.readthedocs.io/en/latest/admin/configuration/#database-selection-per-different-tenant
+      QL_CONFIG: /data/config/ql-config.yaml
+    volumes:
+      - ./ql-config.yaml:/data/config/ql-config.yaml
+    networks:
+      - quantumleap
+    depends_on:
+      - redis
+      - timescale
+
+  redis:
+    image: redis:${REDIS_VERSION:-6.2.3}
+    volumes:
+      - ./.docker/data/redis:/data
+    networks:
+      - quantumleap
+
+  timescale:
+    image: timescale/timescaledb-ha:${TIMESCALE_VERSION:-pg16-all-oss}
+    volumes:
+      # https://www.w3tutorials.net/blog/how-to-create-user-database-in-script-for-docker-postgres/
+      - ./01-init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      # https://github.com/timescale/timescaledb-docker-ha/blob/master/Dockerfile
+      - ./.docker/data/timescale:/home/postgres/pgdata/data
+  # Mount init script
+    environment:
+      - POSTGRES_PASSWORD=*
+    networks:
+      - quantumleap
+
+  # ----------------------------------------------------------------------------
+
+  grafana:
+    image: grafana/grafana
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=frontend"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?}_grafana.rule=Host(`grafana.${COMPOSE_DOMAIN?}`)"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME?}_grafana.loadbalancer.server.port=3000"
+      # HTTPS config
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?}.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+    networks:
+      - quantumleap
+      - frontend

@@ -1,0 +1,38 @@
+services:
+  orion:
+    restart: "${ORION_RESTART:-unless-stopped}"
+    labels:
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME?}-http.entrypoints=web"
+      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME?}-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME?}.entrypoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?}_orion.rule=Host(`orion.${COMPOSE_DOMAIN?}`)"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME?}_orion.loadbalancer.server.port=3000"
+    networks:
+
+  # Database for orion
+  mongo:
+    restart: "${ORION_RESTART:-unless-stopped}"
+
+  # ----------------------------------------------------------------------------
+
+  quantumleap:
+    restart: "${QUANTUMLEAP_RESTART:-unless-stopped}"
+
+  redis:
+    restart: "${QUANTUMLEAP_RESTART:-unless-stopped}"
+
+  timescale:
+    restart: "${QUANTUMLEAP_RESTART:-unless-stopped}"
+
+  # ----------------------------------------------------------------------------
+
+  grafana:
+    restart: "${GRAFANA_RESTART:-unless-stopped}"
+    labels:
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME?}-http.entrypoints=web"
+      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME?}-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME?}.entrypoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?}_grafana.rule=Host(`grafana.${COMPOSE_DOMAIN?}`)"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME?}_grafana.loadbalancer.server.port=3000"
