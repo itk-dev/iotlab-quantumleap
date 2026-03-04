@@ -3,11 +3,11 @@ services:
     restart: "${ORION_RESTART:-unless-stopped}"
     labels:
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME?}-http.entrypoints=web"
-      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME?}-http.middlewares=redirect-to-https"
-      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME?}.entrypoints=websecure"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?}_orion.rule=Host(`orion.${COMPOSE_DOMAIN?}`)"
-      - "traefik.http.services.${COMPOSE_PROJECT_NAME?}_orion.loadbalancer.server.port=3000"
+      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME:?}-http.entrypoints=web"
+      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME:?}-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME:?}.entrypoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:?}_orion.rule=Host(`orion.${COMPOSE_DOMAIN:?}`)"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME:?}_orion.loadbalancer.server.port=1026"
     networks:
 
   # Database for orion
@@ -31,8 +31,8 @@ services:
     restart: "${GRAFANA_RESTART:-unless-stopped}"
     labels:
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME?}-http.entrypoints=web"
-      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME?}-http.middlewares=redirect-to-https"
-      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME?}.entrypoints=websecure"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?}_grafana.rule=Host(`grafana.${COMPOSE_DOMAIN?}`)"
-      - "traefik.http.services.${COMPOSE_PROJECT_NAME?}_grafana.loadbalancer.server.port=3000"
+      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME:?}-http.entrypoints=web"
+      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME:?}-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.scorpio_${COMPOSE_PROJECT_NAME:?}.entrypoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:?}_grafana.rule=Host(`grafana.${COMPOSE_DOMAIN:?}`)"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME:?}_grafana.loadbalancer.server.port=3000"

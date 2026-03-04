@@ -1,0 +1,7 @@
+# https://grafana.com/tutorials/provision-dashboards-and-data-sources/#provision-a-data-source
+
+apiVersion: 1
+
+datasources:
+  - name: TestData
+    type: testdata
