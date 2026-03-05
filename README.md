@@ -5,8 +5,8 @@ Based on <https://quantumleap.readthedocs.io/>.
 Start the show:
 
 ``` shell name=start
-docker compose pull
-docker compose up --detach --wait
+task compose -- pull
+task compose -- up --detach --wait
 
 open https://orion.quantumleap.local.itkdev.dk
 open https://grafana.quantumleap.local.itkdev.dk
@@ -14,7 +14,7 @@ open https://grafana.quantumleap.local.itkdev.dk
 
 ``` shell name=orion-subscription-create
 # https://quantumleap.readthedocs.io/en/latest/user/using/#orion-subscription
-docker compose exec --no-TTY orion curl --silent --show-error localhost:1026/v2/subscriptions --header 'content-type: application/json' --data @- <<EOF
+task compose -- exec --no-TTY orion curl --silent --show-error localhost:1026/v2/subscriptions --header 'content-type: application/json' --data @- <<EOF
 {
     "description": "Test subscription",
     "subject": {
@@ -37,12 +37,12 @@ EOF
 ```
 
 ``` shell name=orion-subscriptions-get
-docker compose exec --no-TTY orion curl --silent --show-error localhost:1026/v2/subscriptions | jq
+task compose -- exec --no-TTY orion curl --silent --show-error localhost:1026/v2/subscriptions | jq
 ```
 
 ``` shell name=orion-entity-create
 # https://fiware-orion.readthedocs.io/en/master/user/walkthrough_apiv2.html#entity-creation
-docker compose exec --no-TTY orion curl --silent --show-error localhost:1026/v2/entities --header 'content-type: application/json' --data @- <<EOF
+task compose -- exec --no-TTY orion curl --silent --show-error localhost:1026/v2/entities --header 'content-type: application/json' --data @- <<EOF
 {
   "id": "Room1",
   "type": "Room",
@@ -61,7 +61,7 @@ EOF
 
 ``` shell name=orion-entity-update substitutions="{«temperature.value»: 87, «pressure.value»: 42}"
 # https://fiware-orion.readthedocs.io/en/master/user/walkthrough_apiv2.html#update-entity
-docker compose exec --no-TTY orion curl --silent --show-error localhost:1026/v2/entities/Room1/attrs --header 'content-type: application/json' --data @- <<EOF
+task compose -- exec --no-TTY orion curl --silent --show-error localhost:1026/v2/entities/Room1/attrs --header 'content-type: application/json' --data @- <<EOF
 {
   "temperature": {
     "value": «temperature.value»,
@@ -78,8 +78,8 @@ EOF
 Talk to the timescale database:
 
 ``` shell name=timescale-query
-docker compose exec timescale psql quantumleap quantumleap --command '\dt'
-docker compose exec timescale psql quantumleap quantumleap --command 'SELECT * FROM etroom'
+task compose -- exec timescale psql quantumleap quantumleap --command '\dt'
+task compose -- exec timescale psql quantumleap quantumleap --command 'SELECT * FROM etroom'
 ```
 
 Generate some random data:
