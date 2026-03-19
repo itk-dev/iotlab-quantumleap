@@ -1,0 +1,2 @@
+# https://quantumleap.readthedocs.io/en/latest/admin/configuration/#database-selection-per-different-tenant
+default-backend: Timescale

@@ -1,0 +1,15 @@
+# https://grafana.com/tutorials/provision-dashboards-and-data-sources/#provision-a-data-source
+
+apiVersion: 1
+
+datasources:
+  - name: "timescale"
+    type: "grafana-postgresql-datasource"
+    url: "timescale:5432"
+    user: "quantumleap"
+    jsonData:
+      database: "quantumleap"
+      sslmode: "disable"
+    # https://grafana.com/docs/grafana/latest/administration/provisioning/#use-environment-variables
+    secureJsonData:
+      password: "*"

@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+# https://taskfile.dev/usage/#env-files
+dotenv:
+  - .env.docker.local
+  - .env.local
+  - .env
+
+vars:
+  DOCKER_COMPOSE: '{{.TASK_DOCKER_COMPOSE | default "docker compose"}}'
+
+tasks:
+  grafana:reset-database:
+    desc: Reset Grafana database
+    prompt: Really?
+    cmds:
+      - git restore docker-compose.quantumleap.yml
+      - |
+        git apply <<'EOF'
+        diff --git a/docker-compose.quantumleap.yml b/docker-compose.quantumleap.yml
+        index 92329be..641c646 100644
+        --- a/docker-compose.quantumleap.yml
+        +++ b/docker-compose.quantumleap.yml
+        @@ -122,4 +122,4 @@ services:
+               - ./grafana/provisioning:/etc/grafana/provisioning
+               - ./grafana/provisioning:/etc/grafana/provisioning
+               # Cf. environment variable GF_PATHS_DATA
+        -      - ./.docker/data/grafana/grafana.db:/var/lib/grafana/grafana.db
+        +      # - ./.docker/data/grafana/grafana.db:/var/lib/grafana/grafana.db
+        EOF
+      - mkdir -p .docker/data/grafana/
+      - rm .docker/data/grafana/grafana.db || true
+      - task: compose
+        vars:
+          TASK_ARGS: up --detach --wait grafana
+      - task: compose
+        vars:
+          TASK_ARGS: cp grafana:/var/lib/grafana/grafana.db .docker/data/grafana/grafana.db
+      - git restore docker-compose.quantumleap.yml
+
+      - task: compose
+        vars:
+          TASK_ARGS: up --detach
+
+  compose:
+    cmds:
+      - '{{.DOCKER_COMPOSE}} {{.TASK_ARGS}} {{.CLI_ARGS}}'
