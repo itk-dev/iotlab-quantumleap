@@ -10,7 +10,6 @@ tasks:
       - task: :compose
         vars:
           TASK_ARGS: rm --force --stop test-data-timescale
-      - task: generate-data:etrefrigerator-sensor
       - task: :compose
         vars:
           TASK_ARGS: up test-data-timescale --detach --wait
@@ -24,7 +23,7 @@ tasks:
           TASK_ARGS: exec test-data-timescale psql quantumleap quantumleap --command '\dt'
       - task: :compose
         vars:
-          TASK_ARGS: exec test-data-timescale psql quantumleap quantumleap --command 'SELECT COUNT(*) FROM "etrefrigerator-sensor"'
+          TASK_ARGS: exec test-data-timescale psql quantumleap quantumleap --command 'SELECT COUNT(*), MIN(time_index), MAX(time_index) FROM "etrefrigerator-sensor"'
 
   generate-data:etrefrigerator-sensor:
     desc: Generate etrefrigerator-sensor.csv

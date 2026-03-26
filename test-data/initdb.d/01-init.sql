@@ -1,5 +1,6 @@
--- # @todo Reqrite to use environment variables (cf. https://stackoverflow.com/a/70976611)
+-- # @todo Rewrite to use environment variables (cf. https://stackoverflow.com/a/70976611)
 CREATE ROLE quantumleap LOGIN PASSWORD '*';
+GRANT pg_execute_server_program TO quantumleap;
 
 CREATE DATABASE quantumleap OWNER quantumleap ENCODING 'UTF8';
 

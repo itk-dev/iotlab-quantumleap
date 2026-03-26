@@ -4,8 +4,7 @@ services:
     volumes:
       # https://www.w3tutorials.net/blog/how-to-create-user-database-in-script-for-docker-postgres/
       - ./test-data/initdb.d/:/docker-entrypoint-initdb.d/
-      # https://github.com/timescale/timescaledb-docker-ha/blob/master/Dockerfile
-      # - ./.docker/data/testdata-timescale:/home/postgres/pgdata/data
+      - ./test-data/:/test-data/
     environment:
       - POSTGRES_PASSWORD=*
     networks:
