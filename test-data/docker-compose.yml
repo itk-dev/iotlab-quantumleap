@@ -1,0 +1,17 @@
+services:
+  test-data-timescale:
+    image: timescale/timescaledb-ha:${TIMESCALE_VERSION:-pg17.9-ts2.25.2-oss}
+    volumes:
+      # https://www.w3tutorials.net/blog/how-to-create-user-database-in-script-for-docker-postgres/
+      - ./test-data/initdb.d/:/docker-entrypoint-initdb.d/
+      # https://github.com/timescale/timescaledb-docker-ha/blob/master/Dockerfile
+      # - ./.docker/data/testdata-timescale:/home/postgres/pgdata/data
+    environment:
+      - POSTGRES_PASSWORD=*
+    networks:
+      - quantumleap
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quantumleap"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

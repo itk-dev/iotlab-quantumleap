@@ -109,3 +109,9 @@ COMPOSE_PROJECT_NAME=quantumleap
 COMPOSE_DOMAIN=quantumleap.srvitkiotlab.itkdev.dk
 COMPOSE_FILES=docker-compose.yml,docker-compose.prod.yml
 ```
+
+## Test data
+
+``` shell
+task test-data:load
+```

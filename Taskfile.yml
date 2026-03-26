@@ -11,6 +11,11 @@ dotenv:
 vars:
   DOCKER_COMPOSE: '{{.TASK_DOCKER_COMPOSE | default "docker compose"}}'
 
+includes:
+  test-data:
+    taskfile: ./test-data/Taskfile.yml
+    dir: ./test-data
+
 tasks:
   grafana:reset-database:
     desc: Reset Grafana database
@@ -47,3 +52,7 @@ tasks:
   compose:
     cmds:
       - '{{.DOCKER_COMPOSE}} {{.TASK_ARGS}} {{.CLI_ARGS}}'
+
+  default:
+    silent: true
+    cmd: task --list

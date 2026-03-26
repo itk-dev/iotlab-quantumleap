@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+tasks:
+  load:
+    desc: Load test data
+    prompt: Really load test data (and reset the current test data)?
+    cmds:
+      - task: :compose
+        vars:
+          TASK_ARGS: rm --force --stop test-data-timescale
+      - task: generate-data:etrefrigerator-sensor
+      - task: :compose
+        vars:
+          TASK_ARGS: up test-data-timescale --detach --wait
+      - task: info
+
+  info:
+    desc: Show test data info
+    cmds:
+      - task: :compose
+        vars:
+          TASK_ARGS: exec test-data-timescale psql quantumleap quantumleap --command '\dt'
+      - task: :compose
+        vars:
+          TASK_ARGS: exec test-data-timescale psql quantumleap quantumleap --command 'SELECT COUNT(*) FROM "etrefrigerator-sensor"'
+
+  generate-data:etrefrigerator-sensor:
+    desc: Generate etrefrigerator-sensor.csv
+    cmds:
+      - task: python
+        vars:
+          TASK_ARGS: generate-etrefrigerator-sensor.py
+
+  python:
+    internal: true
+    cmd: docker run --rm --volume $PWD:/app --workdir /app python:3 python {{.TASK_ARGS}}
