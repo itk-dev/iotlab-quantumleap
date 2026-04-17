@@ -56,3 +56,14 @@ tasks:
   default:
     silent: true
     cmd: task --list
+
+  coding-standards:apply:
+    cmds:
+      # https://docs.astral.sh/ruff/installation/
+      - docker run -v .:/io --rm ghcr.io/astral-sh/ruff check --fix
+
+  coding-standards:check:
+    cmds:
+      - task: coding-standards:apply
+      # https://docs.astral.sh/ruff/installation/
+      - docker run -v .:/io --rm ghcr.io/astral-sh/ruff check

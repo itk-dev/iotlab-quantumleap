@@ -2,6 +2,9 @@
 
 version: '3'
 
+vars:
+  TEST_DATA_SERVICE_NAME: test-data-timescale
+
 tasks:
   load:
     desc: Load test data
@@ -9,29 +12,32 @@ tasks:
     cmds:
       - task: :compose
         vars:
-          TASK_ARGS: rm --force --stop test-data-timescale
+          TASK_ARGS: rm --force --stop {{.TEST_DATA_SERVICE_NAME}}
       - task: :compose
         vars:
-          TASK_ARGS: up test-data-timescale --detach --wait
+          TASK_ARGS: up {{.TEST_DATA_SERVICE_NAME}} --detach --wait
       - task: info
 
   info:
     desc: Show test data info
     cmds:
-      - task: :compose
+      - task: sql:query
         vars:
-          TASK_ARGS: exec test-data-timescale psql quantumleap quantumleap --command '\dt'
-      - task: :compose
+          TASK_ARGS: '\dt'
+      - task: sql:query
         vars:
-          TASK_ARGS: exec test-data-timescale psql quantumleap quantumleap --command 'SELECT COUNT(*), MIN(time_index), MAX(time_index) FROM "etrefrigerator-sensor"'
+          TASK_ARGS: SELECT COUNT(*), MIN(time_index), MAX(time_index) FROM "etrefrigerator-sensor"
 
-  generate-data:etrefrigerator-sensor:
-    desc: Generate etrefrigerator-sensor.csv
+  sql:query:
+    desc: "Run SQL query on test database, example: task {{.TASK}} -- 'SELECT COUNT(*), MIN(time_index), MAX(time_index) FROM \"etrefrigerator-sensor\"'"
     cmds:
-      - task: python
+      - task: :compose
         vars:
-          TASK_ARGS: generate-etrefrigerator-sensor.py
+          TASK_ARGS: exec {{.TEST_DATA_SERVICE_NAME}} psql quantumleap quantumleap --command {{if .TASK_ARGS}}'{{.TASK_ARGS}}'{{end}}
 
-  python:
-    internal: true
-    cmd: docker run --rm --volume $PWD:/app --workdir /app python:3 python {{.TASK_ARGS}}
+  sql:cli:
+    desc: "Run interactive SQL cli on test database"
+    cmds:
+      - task: :compose
+        vars:
+          TASK_ARGS: exec {{.TEST_DATA_SERVICE_NAME}} psql quantumleap quantumleap

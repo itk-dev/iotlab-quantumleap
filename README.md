@@ -115,3 +115,61 @@ COMPOSE_FILES=docker-compose.yml,docker-compose.prod.yml
 ``` shell
 task test-data:load
 ```
+
+## Data types
+
+QuantumLeap tries to guess data types, but sometimes guesses wrong and may need a little help, e.g.
+
+``` sql
+# The first "temperature" data may have been integral.
+ALTER TABLE "etrefrigerator-sensor" ALTER COLUMN temperature TYPE DOUBLE PRECISION;
+ALTER TABLE "etrefrigerator-sensor" ALTER COLUMN battery TYPE DOUBLE PRECISION;
+```
+
+<https://github.com/orchestracities/ngsi-timeseries-api/issues/778#:~:text=the%20moment%2C%20but-,the%20situation%20might%20change%20in%20Q2%202026%20if%20we%20get%20funded,-.>
+
+
+
+
+* <https://quantumleap.iotlab-quantumleap.srvitkiotlab.itkdev.dk/v2/entities?type=refrigerator-sensor>
+* <https://quantumleap.iotlab-quantumleap.srvitkiotlab.itkdev.dk/v2/entities?typePattern=*>
+* <https://quantumleap.iotlab-quantumleap.srvitkiotlab.itkdev.dk/v2/entities/refrigerator-sensor:2515-Milesight>
+
+
+
+``` sql
+quantumleap=> CREATE INDEX ON public."etrefrigerator-sensor" (department);
+CREATE INDEX
+
+quantumleap=> EXPLAIN ANALYSE SELECT * FROM "etrefrigerator-sensor" WHERE department = 'test';
+                                                                            QUERY PLAN
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using "etrefrigerator-sensor_department_idx" on "etrefrigerator-sensor"  (cost=0.42..8.44 rows=1 width=322) (actual time=0.072..0.073 rows=0 loops=1)
+   Index Cond: (department = 'test'::text)
+ Planning Time: 0.623 ms
+ Execution Time: 0.142 ms
+(4 rows)
+
+quantumleap=> DROP INDEX "etrefrigerator-sensor_department_idx";
+DROP INDEX
+
+quantumleap=> EXPLAIN ANALYSE SELECT * FROM "etrefrigerator-sensor" WHERE department = 'test';
+                                                             QUERY PLAN
+-------------------------------------------------------------------------------------------------------------------------------------
+ Gather  (cost=1000.00..8122.64 rows=1 width=322) (actual time=32.369..36.594 rows=0 loops=1)
+   Workers Planned: 2
+   Workers Launched: 2
+   ->  Parallel Seq Scan on "etrefrigerator-sensor"  (cost=0.00..7122.54 rows=1 width=322) (actual time=8.708..8.709 rows=0 loops=3)
+         Filter: (department = 'test'::text)
+         Rows Removed by Filter: 105123
+ Planning Time: 0.263 ms
+ Execution Time: 36.625 ms
+(8 rows)
+
+quantumleap=> SELECT * FROM pg_indexes WHERE tablename = 'etrefrigerator-sensor';
+ schemaname |       tablename       |              indexname               | tablespace |                                                           indexdef
+------------+-----------------------+--------------------------------------+------------+-------------------------------------------------------------------------------------------------------------------------------
+ public     | etrefrigerator-sensor | etrefrigerator-sensor_time_index_idx |            | CREATE INDEX "etrefrigerator-sensor_time_index_idx" ON public."etrefrigerator-sensor" USING btree (time_index DESC)
+ public     | etrefrigerator-sensor | ix_etrefrigerator-sensor_eid_and_tx  |            | CREATE INDEX "ix_etrefrigerator-sensor_eid_and_tx" ON public."etrefrigerator-sensor" USING btree (entity_id, time_index DESC)
+(2 rows)
+```
