@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  TEST_DATA_SERVICE_NAME: test-data-timescale
+
+tasks:
+  load:
+    desc: Load test data
+    prompt: Really load test data (and reset the current test data)?
+    cmds:
+      - task: :compose
+        vars:
+          TASK_ARGS: rm --force --stop {{.TEST_DATA_SERVICE_NAME}}
+      - task: :compose
+        vars:
+          TASK_ARGS: up {{.TEST_DATA_SERVICE_NAME}} --detach --wait
+      - task: info
+
+  info:
+    desc: Show test data info
+    cmds:
+      - task: sql:query
+        vars:
+          TASK_ARGS: '\dt'
+      - task: sql:query
+        vars:
+          TASK_ARGS: SELECT COUNT(*), MIN(time_index), MAX(time_index) FROM "etrefrigerator-sensor"
+
+  sql:query:
+    desc: "Run SQL query on test database, example: task {{.TASK}} -- 'SELECT COUNT(*), MIN(time_index), MAX(time_index) FROM \"etrefrigerator-sensor\"'"
+    cmds:
+      - task: :compose
+        vars:
+          TASK_ARGS: exec {{.TEST_DATA_SERVICE_NAME}} psql quantumleap quantumleap --command {{if .TASK_ARGS}}'{{.TASK_ARGS}}'{{end}}
+
+  sql:cli:
+    desc: "Run interactive SQL cli on test database"
+    cmds:
+      - task: :compose
+        vars:
+          TASK_ARGS: exec {{.TEST_DATA_SERVICE_NAME}} psql quantumleap quantumleap
