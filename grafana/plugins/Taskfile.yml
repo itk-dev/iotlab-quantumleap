@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  NGSILD_GRAFANA_DATASOURCE_VERSION: 1.2.2
+
+tasks:
+  update:
+    desc: Update all plugins
+    cmds:
+      # https://github.com/bfi-de/ngsild-grafana-datasource/blob/main/README.md
+      - curl --location --silent https://github.com/bfi-de/ngsild-grafana-datasource/releases/download/v{{.NGSILD_GRAFANA_DATASOURCE_VERSION}}/ngsild-grafana-datasource-{{.NGSILD_GRAFANA_DATASOURCE_VERSION}}.tgz --output ngsild-grafana-datasource.tgz
+      - tar xf ngsild-grafana-datasource.tgz
