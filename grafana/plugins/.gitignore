@@ -1,0 +1,4 @@
+# Ignore almost anything
+*
+!.gitignore
+!Taskfile.yml

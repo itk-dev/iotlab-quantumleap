@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+task compose -- exec --no-TTY scorpio curl --silent --show-error localhost:9090/ngsi-ld/v1/entities/urn%3Aroom1/attrs --header 'content-type: application/json' --data @- <<EOF
+{
+  "temperature": {
+    "value": $((1 + RANDOM % 10)),
+    "observedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  },
+  "pressure": {
+    "value": $((1 + RANDOM % 87)),
+    "observedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  }
+}
+EOF

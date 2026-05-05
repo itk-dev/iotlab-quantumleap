@@ -4,6 +4,7 @@
 
 networks:
   quantumleap:
+  scorpio:
 
 services:
   orion:
@@ -115,11 +116,51 @@ services:
       # - GF_SERVER_HTTP_PORT=80
       # https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#data
       - GF_PATHS_DATA=/var/lib/grafana # The default value
+
+      - GF_PATHS_PLUGINS=/var/lib/grafana/plugins # The default value
+      # https://github.com/bfi-de/ngsild-grafana-datasource/blob/main/README.md
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=ngsild-grafana-datasource
     volumes:
       # https://grafana.com/docs/grafana/latest/setup-grafana/configure-docker/
       #- ./grafana/grafana.ini://etc/grafana/grafana.ini
       # https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/
       - ./grafana/provisioning:/etc/grafana/provisioning
-      - ./grafana/provisioning:/etc/grafana/provisioning
       # Cf. environment variable GF_PATHS_DATA
       - ./.docker/data/grafana/grafana.db:/var/lib/grafana/grafana.db
+
+      # https://github.com/bfi-de/ngsild-grafana-datasource/blob/main/README.md
+      - ./grafana/plugins/ngsild-grafana-datasource:/var/lib/grafana/plugins/ngsild-grafana-datasource:ro
+
+  scorpio:
+    image: scorpiobroker/all-in-one-runner:java-latest
+    environment:
+      DBHOST: scorpio-db
+    # ports:
+    #   - "9090"
+    depends_on:
+      - scorpio-db
+    networks:
+      - frontend
+      - quantumleap
+      - scorpio
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=frontend"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:?}_scorpio.rule=Host(`scorpio.${COMPOSE_DOMAIN:?}`)"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME:?}_scorpio.loadbalancer.server.port=9090"
+      # HTTPS config
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:?}.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+  scorpio-db:
+    image: postgis/postgis
+    ports:
+      - "5432"
+    environment:
+      POSTGRES_USER: ngb
+      POSTGRES_PASSWORD: ngb
+      POSTGRES_DB: ngb
+    networks:
+      - scorpio
+    volumes:
+      - .docker/data/scorpio-db:/var/lib/postgresql/data

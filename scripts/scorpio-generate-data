@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+echo "Creating entity"
+# https://fiware-scorpio.readthedocs.io/en/master/user/walkthrough_apiv2.html#entity-creation
+task compose -- exec --no-TTY scorpio curl --silent --show-error localhost:9090/ngsi-ld/v1/entities --header 'content-type: application/json' --data @- <<EOF
+{
+  "id": "urn:room1",
+  "type": "Room",
+  "temperature": {
+    "value": 23,
+    "type": "Float"
+  },
+  "pressure": {
+    "value": 720,
+    "type": "Integer"
+  }
+}
+EOF
+
+echo
+echo "Updating entity values …"
+
+while true; do
+    "$script_dir/scorpio-one-ping-only"
+    sleep 10
+done

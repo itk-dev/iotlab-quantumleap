@@ -11,7 +11,27 @@ dotenv:
 vars:
   DOCKER_COMPOSE: '{{.TASK_DOCKER_COMPOSE | default "docker compose"}}'
 
+includes:
+  grafana:plugins:
+    taskfile: ./grafana/plugins/Taskfile.yml
+    dir: ./grafana/plugins
+
 tasks:
+  install:
+    desc: Install plugins
+    cmds:
+      - task: grafana:plugins:update
+
+  start:
+    desc: Start the show
+    cmds:
+      - task: compose
+        vars:
+          TASK_ARGS: pull
+      - task: compose
+        vars:
+          TASK_ARGS: up --detach --remove-orphans --wait
+
   grafana:reset-database:
     desc: Reset Grafana database
     prompt: Really?
